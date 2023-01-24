@@ -1,17 +1,27 @@
+const moment = require("moment");
 const mongoose = require("mongoose");
+var now = moment();
 const objectId = mongoose.Schema.Types.ObjectId;
 const bookSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
-     // unique: true,
+      unique: true
     },
     excerpt: {
          type: String,
-        required: true },
-    userId: { type: objectId, required: true, ref: "usermodel" },
-    ISBN: { type: String, required: true, unique: true },
+        required: true 
+      },
+    userId: { 
+      type: objectId, 
+      required: true,
+       ref: "usermodel" },
+    ISBN: { 
+      type: String, 
+      required: true ,
+      unique: true 
+  },
     category: {
       type: String,
       required: true,
@@ -25,9 +35,18 @@ const bookSchema = new mongoose.Schema(
       default: 0,
     },
     deletedAt: { type: Date },
-    isDeleted: { type: Boolean, default: false },
+    isDeleted: {
+       type: Boolean, 
+       default: false 
+      },
     releasedAt: { 
-        type: Date },
+        type: Date,
+        default:now.format("YYYY, MMMM , DDDD")
+       },
+    reviewsData:{
+        type:objectId,
+        ref:"reviews"
+       }
   },
   { timestamps: true }
 );
