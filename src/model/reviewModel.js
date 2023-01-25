@@ -10,6 +10,7 @@ bookId:{
 },
 reviewedBy:{
     type:String,
+    default:'guest',
     required:true
 
 },
@@ -24,6 +25,9 @@ rating:{
 isDeleted:{
     type:Boolean,
     default:false
+},
+review:{
+    type:String
 }
 
 });
