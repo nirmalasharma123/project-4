@@ -24,16 +24,5 @@ const auth=async function(req,res,next){
    }
 };
 
-const authrize=async function(req,res,next){
-   try{ 
-    let userId=req.prams.userId;
-    if(userId!==req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
-}
-    catch(error){
-        return res.status(500).send({status:false,message:error.message})
-    };
-  next()
 
-};
-
-module.exports={auth,authrize};
+module.exports={auth};
