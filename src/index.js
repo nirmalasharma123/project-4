@@ -1,12 +1,10 @@
 const express=require('express')
-const bodyParser=require('body-parser')
 const route=require('./route/route')
 const {default:mongoose}=require('mongoose');
 mongoose.set("strictQuery",true)
 const app=express()
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(express.json())
 
 mongoose.connect("mongodb+srv://nishant55:1234@nishant99.et97kst.mongodb.net/group10Databases", {
     useNewUrlParser: true
