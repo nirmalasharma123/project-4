@@ -16,7 +16,8 @@ try{
   
     
   if(!title||!validator.isValid(title))  return res.status(400).send({status:false,message:"please provide proper title"});
-
+   title=title.trim()
+   if(valid.isNumeric(title)) return res.status(400).send({status:false,message:"please put valid title"})
 
   let findTitle=await bookModel.findOne({title:title});
   if(findTitle) return res.status(400).send({status:false,message:"please put a unique title"});
@@ -49,7 +50,7 @@ try{
   if(!validator.isValidateName(subcategory) )return res.status(400).send({status:false,message:"please provide a valid subcategory" });
 
   if(reviews){
-    if(!reviews||typeof reviews!="number")  return res.status(400).send({status:false,message:"please provide proper rating"})}
+    if(!reviews||typeof reviews!="number")  return res.status(400).send({status:false,message:"please provide proper reviews"})}
 
    if(!releasedAt||!validator.isValid(releasedAt)) return res.status(400).send({ status : false , message : "releasedAt must be present"});
    releasedAt=releasedAt.trim()
@@ -57,7 +58,7 @@ try{
   
    req.body.userId=userId;
    req.body.releasedAt= moment(releasedAt).format("YYYY-MM-DD")
-  const books=await bookModel.create(data);
+   const books=await bookModel.create(data);
 
   return res.status(201).send({status:true,data:books})}
   catch(error){
@@ -76,7 +77,7 @@ const getBooks = async function(req,res){
   const {userId,category,subcategory} = data
 
   if(userId){
-    if(!isValidObjectId(userId)) return res.status(404).send({status:false,message:"please provide valid userId"});
+    if(!isValidObjectId(userId)) return res.status(400).send({status:false,message:"please provide valid userId"});
     
        filterData.userId= userId
   }
@@ -93,7 +94,7 @@ const getBooks = async function(req,res){
   }
   let getDetails = await bookModel.find(filterData).select({_id:1,title:1, excerpt:1, userId:1, category:1, releasedAt:1, reviews:1}).sort({ title: 1 })
 
-   if(getDetails.length == 0) return res.status(400).send({status:false,message:"No data Found"})
+   if(getDetails.length == 0) return res.status(404).send({status:false,message:"No data Found"})
    
   return res.status(200).send({status:true,data:getDetails})
 
@@ -130,52 +131,60 @@ const updateBook = async function(req,res){
      let bookId=req.params.bookId;
     if(!isValidObjectId(bookId)) return res.status(400).send({status:false,message:"please provide valid bookId"});
     let data=req.body;
-  
-    let {title,excerpt,releasedAt, ISBN} = data;
-  
-
+    
     if(Object.keys(data).length==0) return res.status(400).send({status:false,message:"please provide detail for updation"});
-
+    let final={};
+  
 
     let findBook = await bookModel.findOne({_id:bookId});
     if(!findBook) return res.status(404).send({status:false,message:"book not found"});
     if(findBook.isDeleted==true) return res.status(400).send({status:false,message:"book is already deleted"})
       
 ///////============ Autherization=======================
-     if(findBook.userId!=req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
+    if(findBook.userId!=req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
 
-    if(title)  
-      {if(!validator.isValid(title))  return res.status(400).send({status:false,message:"please provide proper title"});
-       title=title.toLowerCase()
+    if(data.title) {
+        data.title=data.title.trim().toLowerCase()
+        if( typeof (data.title)!= "string")  return res.status(400).send({status:false,message:"please provide proper title"});
+        if(valid.isNumeric(data.title)) return res.status(400).send({status:false,message:"please enter valid title"})
        
-         let findTitle= await bookModel.findOne({title:title});
+         let findTitle= await bookModel.findOne({title:data.title});
          if(findTitle) return res.status(400).send({status:false,message:"please put a unique title"})
            
-         data.title=title}
+           if(data.title!="") {final.title=data.title}
+         
+         }
           
+      if(data.excerpt){
+         if( typeof (data.excerpt)!="string") return res.status(400).send({status:false,message:"please provide excerpt in string"});
+          data.excerpt=data.excerpt.trim()
+          if(data.excerpt!=="") final.excerpt=data.excerpt
 
-      if(excerpt){
-        if (excerpt== " ")  return res.status(400).send({status:false,message:"please provide proper excerpt"})
-        if( typeof excerpt!="string") return res.status(400).send({status:false,message:"please provide excerpt in string"});
-        data.excerpt=excerpt;
       }
-      if(ISBN){
-        if ( typeof ISBN!="string" || ISBN== " ")  return res.status(400).send({status:false,message:"please proper isbn"}) 
-       if(!validator.isbnValidator(ISBN)) return res.status(400).send({status:false,message:"please  valid ISBN"});
-        const checkisbnNo = await bookModel.findOne({ISBN:ISBN});
-         if(checkisbnNo) return res.status(400).send({status:false,message:"ISBN already exsist"});
+      if(data.ISBN){
+        if ( typeof (data.ISBN)!="string" || ISBN== "")  return res.status(400).send({status:false,message:"please proper ISBN"}) 
+        if(!validator.isbnValidator(data.ISBN)) return res.status(400).send({status:false,message:"please  valid ISBN"});
+
+        const checkisbnNo = await bookModel.findOne({ISBN:data.ISBN});
+         if(checkisbnNo) return res.status(400).send({status:false,message:"ISBN already exsist"})
+           final.ISBN=data.ISBN
+         ;
 
       };
-      if(releasedAt){
-        if ( typeof releasedAt!="string" || releasedAt== " ")  return res.status(400).send({status:false,message:"please provide proper title"})
-        if (!validator.isValid(releasedAt))return res.status(400).send({status:false,message:"please provide proper realsedAt"});
-        if(moment(releasedAt).format("YYYY-MM-DD")!=releasedAt) return res.status(400).send({status:false,message:"invalid date format"});
+      if(data.releasedAt){
+        if ( typeof (data.releasedAt)!="string" || data.releasedAt== " ")  return res.status(400).send({status:false,message:"please provide proper releasedAt"});
+        data.releasedAt=data.releasedAt.trim()
+        if (!validator.isValid(data.releasedAt))return res.status(400).send({status:false,message:"please provide proper realsedAt"});
+        if(moment(data.releasedAt).format("YYYY-MM-DD")!=data.releasedAt) return res.status(400).send({status:false,message:"invalid date format"});
          
-        data.releasedAt=releasedAt
+        final.releasedAt=data.releasedAt
 
-      
+
       }
-      let newUpdatedBook=  await bookModel.findOneAndUpdate({_id:bookId},data,{new:true});
+
+      if(Object.keys(final).length==0) return res.status(400).send({status:false,message:"please provide detail for updation"});
+
+      let newUpdatedBook=  await bookModel.findOneAndUpdate({_id:bookId},final,{new:true});
 
       return res.status(200).send({status:true,data:newUpdatedBook});
 
