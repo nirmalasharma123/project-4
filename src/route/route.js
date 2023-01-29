@@ -3,7 +3,7 @@ const middlwWare=require("../middleware/middleware")
 const router=express.Router();
 const userController=require("../controller/userController");
 const bookController=require("../controller/bookController");
-const reviewController=require("../controller/review")
+const reviewController=require("../controller/reviewController")
 
 router.post("/register",userController.creatUser);
 router.post("/login",userController.loginUser);
@@ -12,7 +12,7 @@ router.post("/books",middlwWare.auth,bookController.creatBooks);
 router.get("/books",middlwWare.auth,bookController.getBooks);
 
 router.put("/books/:bookId",middlwWare.auth,bookController.updateBook);
-router.get("/books/:bookId",bookController.getBookByparams)
+router.get("/books/:bookId",middlwWare.auth,bookController.getBookById)
 
 router.delete("/books/:bookId",middlwWare.auth,bookController.deleteParam); 
 
