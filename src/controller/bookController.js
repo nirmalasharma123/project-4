@@ -172,7 +172,7 @@ const updateBook = async function(req,res){
 
       };
       if(data.releasedAt){
-        if ( typeof (data.releasedAt)!="string" || data.releasedAt== " ")  return res.status(400).send({status:false,message:"please provide proper releasedAt"});
+        if ( typeof (data.releasedAt)!="string" || data.releasedAt== "")  return res.status(400).send({status:false,message:"please provide proper releasedAt"});
         data.releasedAt=data.releasedAt.trim()
         if (!validator.isValid(data.releasedAt))return res.status(400).send({status:false,message:"please provide proper realsedAt"});
         if(moment(data.releasedAt).format("YYYY-MM-DD")!=data.releasedAt) return res.status(400).send({status:false,message:"invalid date format"});
