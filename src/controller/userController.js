@@ -39,18 +39,30 @@ const creatUser= async function(req,res){
     if( !validator.isValid(password)) return res.status(400).send({status:false,message:"please provide Proper password"});
     if(!validator.isValidPassword(password)) return res.status(400).send({status:false,message:"password should be minimum 8 letters and max 15 letter and should conatin one special character"});
      
-    if(!address) return  res.status(400).send({msg:"address is mendatory"})
-    if(typeof address!=="object") return res.status(400).send({status:false,message:"please provide address in object "})
-    
-    
-    if(!address.street || !validator.isValid(address.street))return res.status(400).send({status:false,message:"addresss must have street no in it"});
-    if(typeof address.street!="string") return res.status(404).send({status:false,message:"addresss must have street  in  string form "});
+    if(address) {
+        if(typeof address!="undefined"){
+            if(address.street||address.street=="")
+           {
+               address.street=address.street.trim()
+               if(address.street=="")  delete address["street"]
 
-    if(!address.city || !validator.isValid(address.city) ) return res.status(400).send({status:false,message:"address must have city name in it "});
-    if(typeof address.city!="string") return res.status(400).send({status:false,message:"addresss must have city in  string form "});
-
-    if(!address.pincode || !validator.isValid(address.pincode)) return res.status(400).send({status:false,message:"address  must have pincode in it "});
-    if(typeof address.pincode!="string") return res.status(400).send({status:false,message:"addresss must have pincode  in  string form "});
+           }
+           if(address.city||address.city=="")
+           {
+               address.city=address.city.trim()
+               if(address.city=="") delete address["city"]
+            
+           }
+           if(address.pincode||address.pincode=="")
+           {
+              
+               address.pincode=address.pincode.trim()
+               if(address.pincode=="") delete address["pincode"]
+             else if(!validator.isValidpin(address.pincode)) return res.status(400).send({status:false,message:"make sure pincode should be numeric only and 6 digit number"})
+    
+           }
+           }
+       }
      
     let makeUser=await userModel.create(data);
 
