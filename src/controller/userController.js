@@ -5,35 +5,42 @@ const valid=require("validator");
 
 const creatUser= async function(req,res){
 
-    try {let data=req.body;
+    try {
+        let data=req.body;
+        if(Object.keys(data).length==0) return res.status(400).send({status:false,message:"Please provide details"});
         
     let {title,name,phone,email,password,address}=data;
 
-    if(Object.keys(data).length==0) return res.status(400).send({status:false,message:"Please provide details"});
     
-    if(!title) return res.status(400).send({status:false,message:"please provide title"});
-
+    if(!title) return res.status(400).send({status:false,message:"please  title is mendatory"});
+     title=title.trim()
+    if( !validator.isValid(title)) return res.status(400).send({status:false,message:"please provide Proper title"});
     if(!(["Mr", "Mrs", "Miss"].includes(title))) return res.status(400).send({status:false,message:"please provide valid title  like Mr,Miss,Mrs"});
 
     if(!name || !validator.isValid(name)) return res.status(400).send({status:false,message:"please provide Proper name"});
-    if(!validator.isValidateName(name) )return res.status(400).send({status:false,message:"please provide a valid name" });
+    if(!validator.isValidateName(name) )return res.status(400).send({status:false,message:"please provide a valid format of name" });
       
     if(!phone || !validator.isValid(phone)) return res.status(400).send({status:false,message:"please provide phone no"});
+    phone=phone.trim()
     if(!validator.isValidMobile(phone)) return res.status(400).send({status:false,message:"please provide Proper phone no must be 10 digit"});
     
-    if(!email) return res.status(404).send({status:false,message:"please provide email "});
-    if(!valid.isEmail(email))  return res.status(400).send({status:false,message:"please provide Valid email no"});
+    if(!email) return res.status(400).send({status:false,message:"please provide email "});
+    email=email.trim()
+    if( !validator.isValid(email)) return res.status(400).send({status:false,message:"please provide Proper email"});
+    if(!valid.isEmail(email))  return res.status(400).send({status:false,message:"please provide Valid email"});
     
     let findNumber= await userModel.findOne({phone:phone});
-    if(findNumber) return res.status(404).send({status:false,message:"phone no already present"});
+    if(findNumber) return res.status(400).send({status:false,message:"phone no already present"});
 
     let findEmail=await userModel.findOne({email:email})
-    if(findEmail) return res.status(404).send({status:false,message:"email no already present"});
+    if(findEmail) return res.status(400).send({status:false,message:"email already present"});
 
     if(!password) return res.status(400).send({status:false,message:"password is mendatory"});
+    if( !validator.isValid(password)) return res.status(400).send({status:false,message:"please provide Proper password"});
     if(!validator.isValidPassword(password)) return res.status(400).send({status:false,message:"password should be minimum 8 letters and max 15 letter and should conatin one special character"});
      
     if(!address) return  res.status(400).send({msg:"address is mendatory"})
+    if(typeof address!=="object") return res.status(400).send({status:false,message:"please provide address in object "})
     
     
     if(!address.street || !validator.isValid(address.street))return res.status(400).send({status:false,message:"addresss must have street no in it"});
@@ -42,8 +49,7 @@ const creatUser= async function(req,res){
     if(!address.city || !validator.isValid(address.city) ) return res.status(400).send({status:false,message:"address must have city name in it "});
     if(typeof address.city!="string") return res.status(400).send({status:false,message:"addresss must have city in  string form "});
 
-
-    if(!address.pincode || !validator.isValid(address.pincode)) return res.status(404).send({status:false,message:"address  must have pincode in it "});
+    if(!address.pincode || !validator.isValid(address.pincode)) return res.status(400).send({status:false,message:"address  must have pincode in it "});
     if(typeof address.pincode!="string") return res.status(400).send({status:false,message:"addresss must have pincode  in  string form "});
      
     let makeUser=await userModel.create(data);
@@ -61,18 +67,22 @@ const creatUser= async function(req,res){
 const loginUser=async function(req,res){
    try{ 
 
+    if(Object.keys(req.body).length==0) return res.status(400).send({status:false,message:"Please provide details"});
+
     let email=req.body.email;
     let password=req.body.password;
 
     if(!email || !validator.isValid(email)) return res.status(400).send({status:false,message:"email must be present"});
-   
+    email=email.trim()
+    if(!valid.isEmail(email))  return res.status(400).send({status:false,message:"please provide Valid email no"});
+ 
     if(!password) return res.status(400).send({status:false,message:"password must be present"});
-
+   
     let findUser=await userModel.findOne({email:email,password:password});
 
-    if(!findUser) return res.status(404).send({status:false,message:"email or password may be incorrect"});
+    if(!findUser) return res.status(400).send({status:false,message:"email or password may be incorrect"});
 
-    let token=jwt.sign({userId:findUser._id.toString() },"group10project",{ expiresIn: '30m' });
+    let token=jwt.sign({userId:findUser._id.toString() },"group10project",{ expiresIn: '24h' });
 
     res.setHeader("x-api-key",token);
 
