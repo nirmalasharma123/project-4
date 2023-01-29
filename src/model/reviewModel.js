@@ -20,10 +20,13 @@ reviewedBy:{
 },
 reviewedAt:{
     type:Date,
-    require:true
+    required:true
 },
 rating:{
-    type:Number
+    type:Number,
+    minlength:1,
+    maxlength:5,
+    required:true
 
 },
 isDeleted:{
@@ -41,10 +44,3 @@ module.exports=mongoose.model('reviews',reviewSchema)
 
 
 
-// bookId: {ObjectId, mandatory, refs to book model},
-//   reviewedBy: {string, mandatory, default 'Guest', value: reviewer's name},
-//   reviewedAt: {Date, mandatory},
-//   rating: {number, min 1, max 5, mandatory},
-//   review: {string, optional}
-//   isDeleted: {boolean, default: false},
-// }
