@@ -33,7 +33,7 @@ try{
   const checkUser = await userModel.findById(userId)
   if(!checkUser) return res.status(400).send({status:false,message:"can't find user id"});
 
-  autherization
+  //autherization
   if(userId!==req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
 
 
@@ -162,7 +162,8 @@ const updateBook = async function(req,res){
 
       }
       if(data.ISBN){
-        if ( typeof (data.ISBN)!="string" || ISBN== "")  return res.status(400).send({status:false,message:"please proper ISBN"}) 
+        data.ISBN=data.ISBN.trim()
+        if (typeof (data.ISBN)!="string" || data.ISBN== "")  return res.status(400).send({status:false,message:"please proper ISBN"}) 
         if(!validator.isbnValidator(data.ISBN)) return res.status(400).send({status:false,message:"please  valid ISBN"});
 
         const checkisbnNo = await bookModel.findOne({ISBN:data.ISBN});
@@ -178,7 +179,6 @@ const updateBook = async function(req,res){
         if(moment(data.releasedAt).format("YYYY-MM-DD")!=data.releasedAt) return res.status(400).send({status:false,message:"invalid date format"});
          
         final.releasedAt=data.releasedAt
-
 
       }
 
@@ -198,20 +198,21 @@ const updateBook = async function(req,res){
 const deleteParam = async function(req, res) {
   try {
       let id = req.params.bookId ;
+
       if(!isValidObjectId(id)) return res.status(400).send({status:false,message:"please provide valid userId"});
 
 //=================Autherization================================================================
        let findBook = await bookModel.findById(id);
        if (!findBook ) return res.status(400).send({ status: false, message: " no book exsist" })
+       if (findBook.isDeleted == true) return res.status(400).send({status:false,message:"book is already deleted"});
        
-       if(findBook.userId!=req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
+      if(findBook.userId!=req.token) return res.status(403).send({statustus:false,message:"you are not autherize for this"})
        
        
-      if (findBook.isDeleted == true) return res.status(400).send({status:false,message:"book is already deleted"});
 
       
-    let bookToDeleate = await bookModel.findByIdAndUpdate({_id:findBook._id}, { isDeleted: true, deletedAt: Date.now() }, { new: true });
-    let reviweDelet=await reviewModel.findByIdAndUpdate({bookId:findBook._id}, { isDeleted: true}, { new: true });
+    let bookToDeleate = await bookModel.findOneAndUpdate({_id:findBook._id}, { isDeleted: true, deletedAt: Date.now() }, { new: true });
+    let reviweDelet=await reviewModel.findOneAndUpdate({bookId:findBook._id}, { isDeleted: true}, { new: true });
       
       return res.status(200).send({ status: true, message:"book is sucessfully deleted" })
            
