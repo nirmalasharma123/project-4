@@ -1,7 +1,5 @@
-const review = require("../model/reviewModel");
 const bookModel=require("../model/bookmodel")
 const validator = require("../validator/validator");
-const mongoose=require("mongoose");
 const  {isValidObjectId}=require("mongoose");
 const reviewModel = require("../model/reviewModel");
 const bookmodel = require("../model/bookmodel");
@@ -114,8 +112,6 @@ const deleteReview = async function (req, res) {
         const searchBook = await bookModel.findOne({ _id: bookId});
         if (!searchBook) return res.status(404).send({ status: false, message: `Book does not exist by this ${bookId}.` })
         if(searchBook.isDeleted===true) return res.status(400).send({status:false,message:"book already deleted"})
-        
-        
         
         const searchReview = await reviewModel.findOne({ _id:reviewId})
         if (!searchReview)  return res.status(404).send({ status: false, message: `Review does not exist by this ${reviewId}.` })
